@@ -192,7 +192,7 @@ export function ChatView({
                         <Tool key={i} defaultOpen>
                           <ToolHeader type={p.type} state={p.state} title="Course suggestions" />
                           <ToolContent>
-                            <ToolInput input={p.input} />
+                            {p.input != null && <ToolInput input={p.input} />}
                             <ToolOutput
                               output={p.output ? <CourseCards courses={p.output} /> : null}
                               errorText={p.errorText}
@@ -214,7 +214,7 @@ export function ChatView({
                         <Tool key={i} defaultOpen>
                           <ToolHeader type={p.type} state={p.state} title="YouTube channel search" />
                           <ToolContent>
-                            <ToolInput input={p.input} />
+                            {p.input != null && <ToolInput input={p.input} />}
                             <ToolOutput
                               output={p.output ? <ChannelSearchCard {...p.output} /> : null}
                               errorText={p.errorText}
