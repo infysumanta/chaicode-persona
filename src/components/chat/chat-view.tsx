@@ -187,7 +187,7 @@ export function ChatView({
                         errorText?: string;
                       };
                       return (
-                        <Tool key={i} defaultOpen={p.state === "output-available"}>
+                        <Tool key={i} defaultOpen>
                           <ToolHeader type={p.type} state={p.state} title="Course suggestions" />
                           <ToolContent>
                             <ToolInput input={p.input} />
@@ -209,7 +209,7 @@ export function ChatView({
                         errorText?: string;
                       };
                       return (
-                        <Tool key={i} defaultOpen={p.state === "output-available"}>
+                        <Tool key={i} defaultOpen>
                           <ToolHeader type={p.type} state={p.state} title="YouTube channel search" />
                           <ToolContent>
                             <ToolInput input={p.input} />
