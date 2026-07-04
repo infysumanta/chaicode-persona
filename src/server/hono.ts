@@ -121,6 +121,19 @@ app.post("/api/chat", async (c) => {
         }),
         execute: async ({ topic }) => findCourses(persona.id, topic),
       }),
+      searchYouTubeChannel: tool({
+        description:
+          "Search the mentor's OWN YouTube channel for videos on a topic, and return a link that opens those results on their channel. Use when the user would benefit from watching the mentor's videos on a topic.",
+        inputSchema: z.object({
+          topic: z.string().describe("the topic to search on the mentor's channel"),
+        }),
+        execute: async ({ topic }) => ({
+          channel: persona.youtube.name,
+          channelUrl: persona.youtube.url,
+          searchUrl: `${persona.youtube.url}/search?query=${encodeURIComponent(topic)}`,
+          topic,
+        }),
+      }),
     },
   });
 
