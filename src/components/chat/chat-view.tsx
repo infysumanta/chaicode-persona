@@ -109,7 +109,7 @@ export function ChatView({
   return (
     <div className={`persona-${persona.id} flex min-h-0 flex-1 flex-col`}>
       {/* Persona sub-header */}
-      <div className="flex shrink-0 items-center gap-3 border-b bg-background/60 px-4 py-2.5 backdrop-blur">
+      <div className="flex shrink-0 items-center gap-3 border-b bg-background/60 px-4 py-2.5 shadow-sm backdrop-blur">
         <Image
           src={persona.avatar}
           alt={persona.name}
@@ -154,7 +154,7 @@ export function ChatView({
             />
           ) : (
             messages.map((m) => (
-              <Message key={m.id} from={m.role}>
+              <Message key={m.id} from={m.role} className="animate-message-in">
                 {m.role === "assistant" && (
                   <div className="flex items-center gap-2">
                     <Image
@@ -310,7 +310,7 @@ export function ChatView({
             ))}
           </Suggestions>
         )}
-        <PromptInput onSubmit={handleSubmit}>
+        <PromptInput onSubmit={handleSubmit} className="shadow-soft transition-shadow focus-within:shadow-lg">
           <PromptInputBody>
             <PromptInputTextarea placeholder={`Message ${persona.name}…`} />
           </PromptInputBody>

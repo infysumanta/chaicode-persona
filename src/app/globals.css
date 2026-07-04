@@ -169,3 +169,24 @@ summary,
 a {
   cursor: pointer;
 }
+
+/* --- motion + depth --- */
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop-in {
+  from { opacity: 0; transform: scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.animate-message-in { animation: message-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-pop-in { animation: pop-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-message-in, .animate-pop-in { animation: none; }
+}
+
+/* Soft accent-tinted shadow for cards on hover. */
+.shadow-soft { box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), 0 8px 24px -12px rgb(0 0 0 / 0.25); }
+.hover-lift { transition: transform 0.25s ease, box-shadow 0.25s ease; }
+.hover-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 30px -12px color-mix(in oklab, var(--persona-accent) 45%, rgb(0 0 0 / 0.4)); }

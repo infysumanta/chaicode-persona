@@ -26,7 +26,7 @@ export function HomeContent() {
         {PERSONA_LIST.map((p) => (
           <NewChatDialog key={p.id} defaultPersona={p.id}>
             <button
-              className={`persona-${p.id} group flex flex-col items-start gap-4 rounded-2xl border bg-card/60 p-6 text-left backdrop-blur transition hover:accent-ring hover:bg-card`}
+              className={`persona-${p.id} hover-lift group flex flex-col items-start gap-4 rounded-2xl border bg-card/60 p-6 text-left shadow-soft backdrop-blur hover:bg-card`}
             >
               <div className="flex w-full items-center gap-4">
                 <Image src={p.avatar} alt={p.name} width={56} height={56} className="rounded-full accent-ring" />
@@ -62,7 +62,7 @@ export function HomeContent() {
                 <Link
                   key={c.id}
                   href={`/chat/${c.id}`}
-                  className={`persona-${c.persona} flex items-center gap-3 rounded-xl border bg-card/50 p-4 transition hover:accent-ring hover:bg-card`}
+                  className={`persona-${c.persona} hover-lift flex items-center gap-3 rounded-xl border bg-card/50 p-4 shadow-soft hover:bg-card`}
                 >
                   {persona && (
                     <Image src={persona.avatar} alt={persona.name} width={36} height={36} className="rounded-full" />

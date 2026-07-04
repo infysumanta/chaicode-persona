@@ -33,7 +33,7 @@ export function YouTubePreview({ url, id, label }: { url: string; id: string; la
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group my-2 block overflow-hidden rounded-xl border bg-card/60 transition hover:accent-ring hover:bg-card sm:flex"
+      className="hover-lift animate-pop-in group my-2 block overflow-hidden rounded-xl border bg-card/60 shadow-soft hover:bg-card sm:flex"
     >
       <div className="relative aspect-video w-full shrink-0 overflow-hidden bg-muted sm:w-48">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -76,7 +76,7 @@ export function ChannelSearchCard({
       href={searchUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex items-center gap-3 rounded-xl border bg-card/60 p-3 transition hover:accent-ring hover:bg-card"
+      className="hover-lift animate-pop-in group flex items-center gap-3 rounded-xl border bg-card/60 p-3 shadow-soft hover:bg-card"
     >
       <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-600/90 text-white">
         <Play className="size-4 fill-current" />

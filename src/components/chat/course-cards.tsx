@@ -22,7 +22,7 @@ export function CourseCards({ courses }: { courses: CourseCard[] }) {
           href={c.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-start gap-3 rounded-xl border bg-card/60 p-3 transition hover:accent-ring hover:bg-card"
+          className="hover-lift animate-pop-in group flex items-start gap-3 rounded-xl border bg-card/60 p-3 shadow-soft hover:bg-card"
         >
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 text-sm font-semibold">
