@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { ChatHistorySheet } from "@/components/chat-history-sheet";
@@ -12,7 +13,7 @@ export function AppHeader() {
     <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-background/70 px-3 shadow-sm backdrop-blur sm:px-4">
       <ChatHistorySheet />
       <Link href="/" className="mr-auto flex items-center gap-2 font-bold">
-        <span className="text-lg">☕</span>
+        <Image src="/logo.svg" alt="" width={28} height={28} className="rounded-md" />
         <span className="hidden sm:inline">Chai aur Code</span>
       </Link>
       <NewChatDialog>
