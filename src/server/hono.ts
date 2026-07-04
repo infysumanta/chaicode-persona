@@ -4,14 +4,20 @@ import {
   streamText,
   generateText,
   convertToModelMessages,
+  tool,
+  stepCountIs,
   type UIMessage,
 } from "ai";
+import { z } from "zod";
 import { openai } from "@ai-sdk/openai";
 import { appRouter } from "./routers/_app";
 import { createContext } from "./trpc";
 import { auth } from "@/lib/auth";
 import { getPersona } from "@/lib/personas";
 import { saveMessages } from "@/lib/chats";
+import { findCourses, COURSE_GUIDANCE } from "@/lib/courses";
+import { SEARCH_GUIDANCE } from "@/lib/personas";
+import { youtubeId } from "@/lib/youtube";
 
 // Single API app: Better Auth, tRPC, and AI chat streaming all mounted here and
 // served through one Next catch-all route (src/app/api/[[...route]]/route.ts).
@@ -29,6 +35,32 @@ app.use(
     createContext: (_opts, c) => createContext({ headers: c.req.raw.headers }),
   })
 );
+
+// --- YouTube oEmbed (title/author for link previews; no API key, no CORS issue) ---
+app.get("/api/oembed", async (c) => {
+  const url = c.req.query("url");
+  if (!url || !youtubeId(url)) return c.json({ error: "invalid url" }, 400);
+  try {
+    const r = await fetch(
+      `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
+    );
+    if (!r.ok) return c.json({ error: "not found" }, 502);
+    const j = (await r.json()) as {
+      title?: string;
+      author_name?: string;
+      author_url?: string;
+      thumbnail_url?: string;
+    };
+    return c.json({
+      title: j.title,
+      author: j.author_name,
+      authorUrl: j.author_url,
+      thumbnail: j.thumbnail_url,
+    });
+  } catch {
+    return c.json({ error: "fetch failed" }, 502);
+  }
+});
 
 // --- AI chat streaming ---
 function textOf(m: UIMessage): string {
@@ -70,9 +102,26 @@ app.post("/api/chat", async (c) => {
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
   const result = streamText({
-    model: openai(model),
-    system: persona.systemPrompt,
+    // Responses API so we can use OpenAI's built-in web search tool.
+    model: openai.responses(model),
+    system: persona.systemPrompt + COURSE_GUIDANCE + SEARCH_GUIDANCE,
     messages: await convertToModelMessages(messages),
+    stopWhen: stepCountIs(5),
+    tools: {
+      // Provider-executed web search (uses OPENAI_API_KEY). Lets the mentor find
+      // and share DIRECT links to their own YouTube videos, blogs, and docs.
+      web_search: openai.tools.webSearch(),
+      recommendCourses: tool({
+        description:
+          "Look up THIS mentor's own real, current courses relevant to a topic the user wants to learn. Call it only when the user is trying to learn a topic the mentor teaches, so you can share a genuine enroll link as a friendly optional suggestion. Returns [] when nothing fits -- then do not mention any course.",
+        inputSchema: z.object({
+          topic: z
+            .string()
+            .describe("the tech/topic the user wants to learn, e.g. 'docker', 'react', 'system design'"),
+        }),
+        execute: async ({ topic }) => findCourses(persona.id, topic),
+      }),
+    },
   });
 
   return result.toUIMessageStreamResponse({
