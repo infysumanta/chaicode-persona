@@ -146,3 +146,26 @@ body {
 .accent-text { color: var(--persona-accent); }
 .accent-bg { background-color: var(--persona-accent); }
 .accent-grad { background-image: linear-gradient(135deg, color-mix(in oklab, var(--persona-accent) 90%, black), color-mix(in oklab, var(--persona-accent) 55%, black)); }
+
+/* Chat markdown links: accent-colored, understated (underline on hover only).
+   Scoped to .chat-prose so it never touches course/youtube card anchors. */
+.chat-prose a {
+  color: var(--persona-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+.chat-prose a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Interactive elements get a pointer cursor (Tailwind v4 resets buttons to default). */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+[role="menuitem"],
+[role="option"],
+label[for],
+summary,
+a {
+  cursor: pointer;
+}

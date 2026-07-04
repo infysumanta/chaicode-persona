@@ -5,7 +5,9 @@ export default function HomePage() {
   return (
     <>
       <AppHeader />
-      <HomeContent />
+      <main className="min-h-0 flex-1 overflow-y-auto">
+        <HomeContent />
+      </main>
     </>
   );
 }

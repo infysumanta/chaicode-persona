@@ -33,7 +33,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex flex-1 items-center justify-center px-4 py-10">
+    <main className="flex flex-1 items-center justify-center overflow-y-auto px-4 py-10">
       <div className="w-full max-w-md rounded-2xl border bg-card/70 p-8 backdrop-blur shadow-xl">
         <div className="mb-6 flex -space-x-3 justify-center">
           {PERSONA_LIST.map((p) => (
