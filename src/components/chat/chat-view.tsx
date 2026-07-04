@@ -206,124 +206,114 @@ export function ChatView({
                   </div>
                 )}
                 <MessageContent>
-                  {m.parts.map((part, i) => {
-                    if (part.type === "text") {
-                      return (
-                        <MessageResponse key={i} className="chat-prose">
-                          {stripCourseLinks(stripYouTubeLinks(part.text))}
-                        </MessageResponse>
-                      );
-                    }
-                    // Course recommendations: render the tool call, with the
-                    // clickable course cards nested inside the tool output.
-                    if (part.type === "tool-recommendCourses") {
-                      const p = part as {
-                        type: `tool-${string}`;
-                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
-                        input?: unknown;
-                        output?: CourseCard[];
-                        errorText?: string;
-                      };
-                      return (
-                        <div key={i} className="flex flex-col gap-2">
-                          <Tool>
-                            <ToolHeader type={p.type} state={p.state} title="Course suggestions" />
+                  {m.parts.map((part, i) =>
+                    part.type === "text" ? (
+                      <MessageResponse key={i} className="chat-prose">
+                        {stripCourseLinks(stripYouTubeLinks(part.text))}
+                      </MessageResponse>
+                    ) : null
+                  )}
+                  {m.role === "assistant" &&
+                    (() => {
+                      // Auxiliary content rendered AFTER the text: tool boxes,
+                      // course/video cards, and the references footer.
+                      const toolBoxes: React.ReactNode[] = [];
+                      const courseCards: CourseCard[] = [];
+                      const channelCards: {
+                        channel: string;
+                        channelUrl?: string;
+                        searchUrl: string;
+                        topic?: string;
+                      }[] = [];
+                      m.parts.forEach((part, i) => {
+                        if (!(typeof part.type === "string" && part.type.startsWith("tool-"))) return;
+                        const p = part as {
+                          type: `tool-${string}`;
+                          state: "input-streaming" | "input-available" | "output-available" | "output-error";
+                          input?: unknown;
+                          output?: unknown;
+                          errorText?: string;
+                        };
+                        const title =
+                          p.type === "tool-recommendCourses"
+                            ? "Course suggestions"
+                            : p.type === "tool-searchYouTubeChannel"
+                              ? "YouTube channel search"
+                              : TOOL_TITLES[p.type];
+                        toolBoxes.push(
+                          <Tool key={`tool-${i}`}>
+                            <ToolHeader type={p.type} state={p.state} title={title} />
                             <ToolContent>
                               {p.input != null && <ToolInput input={p.input} />}
                               <ToolOutput output={p.output} errorText={p.errorText} />
                             </ToolContent>
                           </Tool>
-                          {p.output?.length ? <CourseCards courses={p.output} /> : null}
-                        </div>
-                      );
-                    }
-                    // Mentor's YouTube channel search -> channel card.
-                    if (part.type === "tool-searchYouTubeChannel") {
-                      const p = part as {
-                        type: `tool-${string}`;
-                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
-                        input?: unknown;
-                        output?: { channel: string; channelUrl?: string; searchUrl: string; topic?: string };
-                        errorText?: string;
-                      };
-                      return (
-                        <div key={i} className="flex flex-col gap-2">
-                          <Tool>
-                            <ToolHeader type={p.type} state={p.state} title="YouTube channel search" />
-                            <ToolContent>
-                              {p.input != null && <ToolInput input={p.input} />}
-                              <ToolOutput output={p.output} errorText={p.errorText} />
-                            </ToolContent>
-                          </Tool>
-                          {p.output ? <ChannelSearchCard {...p.output} /> : null}
-                        </div>
-                      );
-                    }
-                    // Any other tool call (e.g. web_search) — generic display.
-                    if (typeof part.type === "string" && part.type.startsWith("tool-")) {
-                      const p = part as {
-                        type: `tool-${string}`;
-                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
-                        input?: unknown;
-                        output?: unknown;
-                        errorText?: string;
-                      };
-                      return (
-                        <Tool key={i}>
-                          <ToolHeader type={p.type} state={p.state} title={TOOL_TITLES[p.type]} />
-                          <ToolContent>
-                            {p.input != null && <ToolInput input={p.input} />}
-                            <ToolOutput output={p.output} errorText={p.errorText} />
-                          </ToolContent>
-                        </Tool>
-                      );
-                    }
-                    return null;
-                  })}
-                  {m.role === "assistant" &&
-                    (() => {
-                      const links = extractYouTubeLinks(assistantText);
-                      return links.length ? (
-                        <div className="mt-2 flex flex-col gap-2">
-                          {links.map((l) => (
-                            <YouTubePreview key={l.id} url={l.url} id={l.id} label={l.label} />
-                          ))}
-                        </div>
-                      ) : null;
-                    })()}
-                  {m.role === "assistant" &&
-                    (() => {
-                      const courses = extractCourseLinks(assistantText).filter(
+                        );
+                        if (p.type === "tool-recommendCourses" && Array.isArray(p.output)) {
+                          courseCards.push(...(p.output as CourseCard[]));
+                        }
+                        if (
+                          p.type === "tool-searchYouTubeChannel" &&
+                          p.output &&
+                          typeof p.output === "object"
+                        ) {
+                          channelCards.push(
+                            p.output as {
+                              channel: string;
+                              channelUrl?: string;
+                              searchUrl: string;
+                              topic?: string;
+                            }
+                          );
+                        }
+                      });
+
+                      const inlineCourses = extractCourseLinks(assistantText).filter(
                         (c) => !toolCourseUrls.has(c.url)
                       );
-                      return courses.length ? <CourseCards courses={courses} /> : null;
-                    })()}
-                  {m.role === "assistant" &&
-                    (() => {
-                      const searches = extractYouTubeSearchLinks(assistantText).filter(
-                        (sr) => !toolSearchUrls.has(sr.url)
-                      );
-                      return searches.length ? (
-                        <div className="mt-2 flex flex-col gap-2">
-                          {searches.map((sr) => (
-                            <ChannelSearchCard
-                              key={sr.url}
-                              channel={sr.channel ?? "YouTube"}
-                              searchUrl={sr.url}
-                              topic={sr.query}
-                            />
-                          ))}
-                        </div>
-                      ) : null;
-                    })()}
-                  {m.role === "assistant" &&
-                    (() => {
+                      const ytLinks = extractYouTubeLinks(assistantText);
+                      const inlineSearches = extractYouTubeSearchLinks(assistantText)
+                        .filter((sr) => !toolSearchUrls.has(sr.url))
+                        .map((sr) => ({ channel: sr.channel ?? "YouTube", searchUrl: sr.url, topic: sr.query }));
                       const refs = extractLinks(assistantText).filter(
                         (l) => !youtubeId(l.url) && !parseYtSearch(l.url) && !courseForUrl(l.url)
                       );
-                      return <MessageSources links={refs} />;
+                      const allCourses = [...courseCards, ...inlineCourses];
+                      const allChannels = [...channelCards, ...inlineSearches];
+
+                      if (
+                        toolBoxes.length === 0 &&
+                        allCourses.length === 0 &&
+                        ytLinks.length === 0 &&
+                        allChannels.length === 0 &&
+                        refs.length === 0
+                      ) {
+                        return null;
+                      }
+
+                      return (
+                        <div className="mt-2 flex flex-col gap-2">
+                          {toolBoxes}
+                          {allCourses.length > 0 && <CourseCards courses={allCourses} />}
+                          {ytLinks.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                              {ytLinks.map((l) => (
+                                <YouTubePreview key={l.id} url={l.url} id={l.id} label={l.label} />
+                              ))}
+                            </div>
+                          )}
+                          {allChannels.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                              {allChannels.map((sr, idx) => (
+                                <ChannelSearchCard key={`${sr.searchUrl}-${idx}`} {...sr} />
+                              ))}
+                            </div>
+                          )}
+                          {refs.length > 0 && <MessageSources links={refs} />}
+                        </div>
+                      );
                     })()}
-                </MessageContent>
+                                </MessageContent>
               </Message>
               );
             })
