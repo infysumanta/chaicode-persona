@@ -33,9 +33,11 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { CourseCards, type CourseCard } from "@/components/chat/course-cards";
-import { extractCourseLinks, stripCourseLinks } from "@/lib/courses";
+import { extractCourseLinks, stripCourseLinks, courseForUrl } from "@/lib/courses";
 import { YouTubePreview, ChannelSearchCard } from "@/components/chat/youtube-preview";
-import { extractYouTubeLinks, stripYouTubeLinks } from "@/lib/youtube";
+import { extractYouTubeLinks, extractYouTubeSearchLinks, stripYouTubeLinks, youtubeId, parseYtSearch } from "@/lib/youtube";
+import { extractLinks } from "@/lib/links";
+import { MessageSources } from "@/components/chat/message-sources";
 import {
   Tool,
   ToolHeader,
@@ -267,6 +269,38 @@ export function ChatView({
                           .join("\n")
                       );
                       return courses.length ? <CourseCards courses={courses} /> : null;
+                    })()}
+                  {m.role === "assistant" &&
+                    (() => {
+                      const searches = extractYouTubeSearchLinks(
+                        m.parts
+                          .filter((p) => p.type === "text")
+                          .map((p) => (p as { text: string }).text)
+                          .join("\n")
+                      );
+                      return searches.length ? (
+                        <div className="mt-2 flex flex-col gap-2">
+                          {searches.map((sr) => (
+                            <ChannelSearchCard
+                              key={sr.url}
+                              channel={sr.channel ?? "YouTube"}
+                              searchUrl={sr.url}
+                              topic={sr.query}
+                            />
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
+                  {m.role === "assistant" &&
+                    (() => {
+                      const text = m.parts
+                        .filter((p) => p.type === "text")
+                        .map((p) => (p as { text: string }).text)
+                        .join("\n");
+                      const refs = extractLinks(text).filter(
+                        (l) => !youtubeId(l.url) && !parseYtSearch(l.url) && !courseForUrl(l.url)
+                      );
+                      return <MessageSources links={refs} />;
                     })()}
                 </MessageContent>
               </Message>
