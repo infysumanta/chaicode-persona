@@ -34,7 +34,7 @@ import {
 import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { CourseCards, type CourseCard } from "@/components/chat/course-cards";
 import { extractCourseLinks, stripCourseLinks } from "@/lib/courses";
-import { YouTubePreview } from "@/components/chat/youtube-preview";
+import { YouTubePreview, ChannelSearchCard } from "@/components/chat/youtube-preview";
 import { extractYouTubeLinks, stripYouTubeLinks } from "@/lib/youtube";
 import {
   Tool,
@@ -57,6 +57,13 @@ const STARTERS: Record<PersonaId, string[]> = {
     "Node.js backend project idea",
     "GenAI agents kaise banaye?",
   ],
+};
+
+// Friendly labels instead of raw tool ids in the Tool header.
+const TOOL_TITLES: Record<string, string> = {
+  "tool-web_search": "Web search",
+  "tool-searchYouTubeChannel": "YouTube channel search",
+  "tool-recommendCourses": "Course suggestions",
 };
 
 export function ChatView({
@@ -192,6 +199,28 @@ export function ChatView({
                         </Tool>
                       );
                     }
+                    // Mentor's YouTube channel search -> channel card.
+                    if (part.type === "tool-searchYouTubeChannel") {
+                      const p = part as {
+                        type: `tool-${string}`;
+                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
+                        input?: unknown;
+                        output?: { channel: string; channelUrl?: string; searchUrl: string; topic?: string };
+                        errorText?: string;
+                      };
+                      return (
+                        <Tool key={i} defaultOpen={p.state === "output-available"}>
+                          <ToolHeader type={p.type} state={p.state} title="YouTube channel search" />
+                          <ToolContent>
+                            <ToolInput input={p.input} />
+                            <ToolOutput
+                              output={p.output ? <ChannelSearchCard {...p.output} /> : null}
+                              errorText={p.errorText}
+                            />
+                          </ToolContent>
+                        </Tool>
+                      );
+                    }
                     // Any other tool call (e.g. web_search) — generic display.
                     if (typeof part.type === "string" && part.type.startsWith("tool-")) {
                       const p = part as {
@@ -203,7 +232,7 @@ export function ChatView({
                       };
                       return (
                         <Tool key={i}>
-                          <ToolHeader type={p.type} state={p.state} />
+                          <ToolHeader type={p.type} state={p.state} title={TOOL_TITLES[p.type]} />
                           <ToolContent>
                             {p.input != null && <ToolInput input={p.input} />}
                             <ToolOutput output={p.output} errorText={p.errorText} />
@@ -242,6 +271,31 @@ export function ChatView({
                 </MessageContent>
               </Message>
             ))
+          )}
+          {status === "submitted" && (
+            <Message from="assistant">
+              <div className="flex items-center gap-2">
+                <Image
+                  src={persona.avatar}
+                  alt={persona.name}
+                  width={28}
+                  height={28}
+                  className="size-7 shrink-0 rounded-full object-cover accent-ring"
+                />
+                <span className="text-sm font-semibold">{persona.name}</span>
+              </div>
+              <MessageContent>
+                <span className="flex items-center gap-1 py-2" aria-label="Thinking">
+                  {[0, 150, 300].map((d) => (
+                    <span
+                      key={d}
+                      className="size-2 animate-bounce rounded-full bg-muted-foreground/60"
+                      style={{ animationDelay: `${d}ms` }}
+                    />
+                  ))}
+                </span>
+              </MessageContent>
+            </Message>
           )}
         </ConversationContent>
         <ConversationScrollButton />

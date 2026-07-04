@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Play } from "lucide-react";
+import { Play, Search } from "lucide-react";
 import { youtubeThumb } from "@/lib/youtube";
 
 interface Meta {
@@ -56,6 +56,40 @@ export function YouTubePreview({ url, id, label }: { url: string; id: string; la
           <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">{meta.author}</div>
         )}
       </div>
+    </a>
+  );
+}
+
+/** Renders the searchYouTubeChannel tool output — a link to the mentor's channel results. */
+export function ChannelSearchCard({
+  channel,
+  searchUrl,
+  topic,
+}: {
+  channel: string;
+  channelUrl?: string;
+  searchUrl: string;
+  topic?: string;
+}) {
+  return (
+    <a
+      href={searchUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex items-center gap-3 rounded-xl border bg-card/60 p-3 transition hover:accent-ring hover:bg-card"
+    >
+      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-600/90 text-white">
+        <Play className="size-4 fill-current" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-1.5 text-sm font-semibold">
+          <Search className="size-3.5 opacity-70" />
+          {topic ? `"${topic}" on ${channel}` : channel}
+        </span>
+        <span className="block truncate text-xs text-muted-foreground">
+          Watch related videos on {channel}&apos;s YouTube channel
+        </span>
+      </span>
     </a>
   );
 }
