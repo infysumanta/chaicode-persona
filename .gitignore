@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# but keep the template committed
+!.env.example
+
+# local agent/harness settings
+.claude/
