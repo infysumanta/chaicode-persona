@@ -16,7 +16,7 @@ import { auth } from "@/lib/auth";
 import { getPersona } from "@/lib/personas";
 import { saveMessages } from "@/lib/chats";
 import { findCourses, COURSE_GUIDANCE } from "@/lib/courses";
-import { SEARCH_GUIDANCE } from "@/lib/personas";
+import { SEARCH_GUIDANCE, guardrails } from "@/lib/personas";
 import { youtubeId } from "@/lib/youtube";
 
 // Single API app: Better Auth, tRPC, and AI chat streaming all mounted here and
@@ -101,11 +101,18 @@ app.post("/api/chat", async (c) => {
   const userId = session.user.id;
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
+  // History may contain tool parts (incl. provider-executed web_search) that don't
+  // round-trip through convertToModelMessages. The model only needs the text, so
+  // keep just text parts for conversion. The UI still persists/renders full parts.
+  const historyForModel = messages
+    .map((m) => ({ ...m, parts: m.parts.filter((part) => part.type === "text") }))
+    .filter((m) => m.parts.length > 0);
+
   const result = streamText({
     // Responses API so we can use OpenAI's built-in web search tool.
     model: openai.responses(model),
-    system: persona.systemPrompt + COURSE_GUIDANCE + SEARCH_GUIDANCE,
-    messages: await convertToModelMessages(messages),
+    system: persona.systemPrompt + COURSE_GUIDANCE + SEARCH_GUIDANCE + guardrails(persona.name),
+    messages: await convertToModelMessages(historyForModel),
     stopWhen: stepCountIs(5),
     tools: {
       // Provider-executed web search (uses OPENAI_API_KEY). Lets the mentor find
