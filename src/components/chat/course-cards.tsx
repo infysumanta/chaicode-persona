@@ -1,10 +1,11 @@
-import { ExternalLink, GraduationCap } from "lucide-react";
+import { ExternalLink, GraduationCap, Tag } from "lucide-react";
 
 export interface CourseCard {
   title: string;
   provider: string;
   url: string;
   blurb: string;
+  coupon?: string;
 }
 
 // Rendered from the recommendCourses tool output. Deliberately understated —
@@ -31,6 +32,11 @@ export function CourseCards({ courses }: { courses: CourseCard[] }) {
             </div>
             <div className="text-xs accent-text">{c.provider}</div>
             {c.blurb && <div className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{c.blurb}</div>}
+            {c.coupon && (
+              <div className="mt-1.5 inline-flex items-center gap-1 rounded-md border border-dashed border-current px-1.5 py-0.5 text-[11px] font-medium accent-text">
+                <Tag className="size-3" /> Code {c.coupon} — 10% off
+              </div>
+            )}
           </div>
         </a>
       ))}

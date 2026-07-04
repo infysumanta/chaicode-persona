@@ -8,75 +8,121 @@ export interface Course {
   url: string;
   tags: string[]; // lowercase keywords for matching a user's topic
   blurb: string;
+  coupon?: string; // discount code to mention on the card (e.g. ChaiCode affiliate)
 }
+
+// Affiliate discount code for ChaiCode courses (10% off).
+export const CHAICODE_COUPON = "SUMANTA52110";
 
 // Real, current courses (URLs verified via research, mid-2026). Prices omitted —
 // they rotate; the card links straight to the live enroll page. Udemy links that
 // carry a referralCode are the creator's own official links.
 export const CATALOG: Course[] = [
-  // ---------------- Hitesh Choudhary ----------------
+  // ---------------- Hitesh Choudhary — ChaiCode (coupon SUMANTA52110 for 10% off) ----------------
   {
     id: "hitesh-webdev-cohort",
     persona: "hitesh",
     title: "Web Dev Cohort (Live)",
     provider: "ChaiCode",
     url: "https://chaicode.com/cohorts/web-dev",
-    tags: ["web", "webdev", "web dev", "fullstack", "full stack", "html", "css", "javascript", "js", "react", "node", "nodejs", "backend", "frontend", "docker", "aws"],
-    blurb: "Live full-stack cohort with mentorship — JS, React, Next.js, Node, DBs, Docker, AWS.",
+    tags: ["web", "webdev", "web dev", "fullstack", "full stack", "html", "css", "javascript", "js", "react", "nextjs", "next.js", "next", "node", "nodejs", "backend", "frontend", "typescript", "mongodb", "postgresql", "docker", "aws", "devops"],
+    blurb: "5-month live full-stack cohort — JS, React, Next.js, Node, DBs, Docker, AWS, CI/CD.",
+    coupon: CHAICODE_COUPON,
   },
   {
     id: "hitesh-genai-cohort",
     persona: "hitesh",
-    title: "GenAI with Python 2.0 (Live)",
+    title: "GenAI with Python (Live Cohort)",
     provider: "ChaiCode",
-    url: "https://chaicode.com/cohorts/gen-ai",
-    tags: ["genai", "gen ai", "generative ai", "ai", "python", "llm", "rag", "agents", "agentic", "mcp", "vector"],
-    blurb: "Deep-dive GenAI cohort — LLMs, RAG, agents and vector stores with Python.",
+    url: "https://courses.chaicode.com/learn/batch/about?bundleId=232480",
+    tags: ["genai", "gen ai", "generative ai", "ai", "python", "llm", "rag", "agents", "agentic", "mcp"],
+    blurb: "Live cohort to build AI products with Python and GenAI — LLMs, RAG, agents.",
+    coupon: CHAICODE_COUPON,
   },
   {
-    id: "hitesh-mobile-cohort",
+    id: "hitesh-dsa-cohort",
     persona: "hitesh",
-    title: "Mobile Dev Cohort (React Native)",
+    title: "DSA with Java (Live Cohort)",
     provider: "ChaiCode",
-    url: "https://chaicode.com/cohorts/mobile-dev",
-    tags: ["mobile", "react native", "reactnative", "android", "ios", "app", "expo", "cross platform"],
-    blurb: "Build cross-platform mobile apps with React Native.",
+    url: "https://courses.chaicode.com/learn/batch/DSA-with-Java-Live-Cohort/about",
+    tags: ["dsa", "data structures", "algorithms", "java", "leetcode", "interview"],
+    blurb: "Live DSA cohort in Java for interview preparation.",
+    coupon: CHAICODE_COUPON,
   },
   {
-    id: "hitesh-system-design",
+    id: "hitesh-all-cohorts",
     persona: "hitesh",
-    title: "System Design Cohort",
+    title: "All ChaiCode Cohorts (DevOps, Data Science, DSA…)",
     provider: "ChaiCode",
-    url: "https://chaicode.com/cohorts/system-design",
-    tags: ["system design", "systemdesign", "scalability", "architecture", "distributed", "hld", "lld"],
-    blurb: "System design for real-world scalable applications.",
+    url: "https://courses.chaicode.com/learn/view-all?show=all&type=100",
+    tags: ["devops", "data science", "datascience", "machine learning", "ml", "c++", "dsa", "cohort", "cohorts", "browse", "docker", "linux"],
+    blurb: "Browse every live ChaiCode cohort — DevOps, Data Science, DSA and more.",
+    coupon: CHAICODE_COUPON,
+  },
+
+  // ---------------- Hitesh Choudhary — Udemy (KEEPLEARNING coupon baked into the link) ----------------
+  {
+    id: "hitesh-genai-udemy",
+    persona: "hitesh",
+    title: "Full Stack Generative & Agentic AI with Python",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/full-stack-ai-with-python/?couponCode=KEEPLEARNING",
+    tags: ["genai", "gen ai", "generative ai", "agentic", "agents", "agent", "ai", "python", "llm", "rag", "mcp"],
+    blurb: "GenAI + agentic AI with Python — LLMs, RAG, agents, MCP.",
   },
   {
     id: "hitesh-webdev-udemy",
     persona: "hitesh",
     title: "Complete Web Development Course",
     provider: "Udemy",
-    url: "https://www.udemy.com/course/web-dev-master/",
+    url: "https://www.udemy.com/course/web-dev-master/?couponCode=KEEPLEARNING",
     tags: ["web", "webdev", "web dev", "fullstack", "javascript", "js", "react", "node", "self paced"],
     blurb: "Self-paced beginner-to-pro full-stack web development.",
+  },
+  {
+    id: "hitesh-react-udemy",
+    persona: "hitesh",
+    title: "Complete React & Next.js Course (AI-powered projects)",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/complete-react-and-nextjs-course-with-ai-powered-projects/?couponCode=KEEPLEARNING",
+    tags: ["react", "reactjs", "nextjs", "next.js", "next", "frontend", "ui", "hooks", "ssr"],
+    blurb: "Master React and Next.js by building AI-powered projects.",
   },
   {
     id: "hitesh-python-udemy",
     persona: "hitesh",
     title: "The Ultimate Python Bootcamp (50 Projects)",
     provider: "Udemy",
-    url: "https://www.udemy.com/course/100-days-of-python/",
+    url: "https://www.udemy.com/course/100-days-of-python/?couponCode=KEEPLEARNING",
     tags: ["python", "bootcamp", "projects", "beginner", "programming"],
     blurb: "Learn Python by building 50 real projects.",
   },
   {
-    id: "hitesh-all-cohorts",
+    id: "hitesh-node-udemy",
     persona: "hitesh",
-    title: "All ChaiCode Cohorts (DevOps, DSA, Data Science…)",
-    provider: "ChaiCode",
-    url: "https://courses.chaicode.com/learn/view-all?show=batch&type=17",
-    tags: ["devops", "dsa", "data science", "datascience", "cohort", "cohorts", "browse", "docker", "kubernetes", "aws", "c++", "java", "algorithms"],
-    blurb: "Browse every live cohort — DevOps, DSA, Data Science and more.",
+    title: "Node.js Backend Development",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/nodejs-backend/?couponCode=KEEPLEARNING",
+    tags: ["node", "nodejs", "backend", "express", "api", "rest", "server", "mongodb", "sql"],
+    blurb: "Full Node.js backend — Express, databases, APIs, deployment.",
+  },
+  {
+    id: "hitesh-dsa-udemy",
+    persona: "hitesh",
+    title: "Data Structures & Algorithms for Tech Interviews",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/data-structures-and-algorithm-dsa-for-tech-interviews/?couponCode=KEEPLEARNING",
+    tags: ["dsa", "data structures", "algorithms", "interview", "leetcode", "coding interview"],
+    blurb: "DSA from basics to advanced, aimed at cracking tech interviews.",
+  },
+  {
+    id: "hitesh-docker-udemy",
+    persona: "hitesh",
+    title: "Docker & Kubernetes for Beginners — DevOps Journey",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/docker-and-kubernetes-for-beginners-devops-journey/?couponCode=KEEPLEARNING",
+    tags: ["docker", "kubernetes", "k8s", "devops", "containers", "container", "containerization", "deployment"],
+    blurb: "Docker and Kubernetes fundamentals for a DevOps journey.",
   },
 
   // ---------------- Piyush Garg ----------------
@@ -90,31 +136,49 @@ export const CATALOG: Course[] = [
     blurb: "Premium Docker course — images, networking, volumes, Compose, ECS/ECR, autoscaling.",
   },
   {
-    id: "piyush-node",
-    persona: "piyush",
-    title: "Node.js — Beginner to Advance",
-    provider: "Udemy",
-    url: "https://www.udemy.com/course/nodejs-backend/?referralCode=6AD0C798E808E506CC1A",
-    tags: ["node", "nodejs", "backend", "express", "mongodb", "sql", "nosql", "orm", "api", "rest", "server"],
-    blurb: "Full Node.js backend — Express, SQL/NoSQL, aggregation, testing, deployment.",
-  },
-  {
     id: "piyush-genai",
     persona: "piyush",
     title: "Full Stack Generative & Agentic AI with Python",
     provider: "Udemy",
-    url: "https://www.udemy.com/course/full-stack-ai-with-python/?referralCode=9FB677774173802C7752",
-    tags: ["genai", "gen ai", "generative ai", "agentic", "agentic ai", "agents", "agent", "ai", "python", "llm", "rag", "mcp", "openai", "langchain", "langgraph"],
+    url: "https://www.udemy.com/course/full-stack-ai-with-python/?couponCode=KEEPLEARNING",
+    tags: ["genai", "gen ai", "generative ai", "agentic", "agents", "agent", "ai", "python", "llm", "rag", "mcp", "langchain", "langgraph"],
     blurb: "GenAI + agentic AI with Python — LLMs, RAG, agents, MCP.",
+  },
+  {
+    id: "piyush-node",
+    persona: "piyush",
+    title: "Node.js — Beginner to Advance",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/nodejs-backend/?couponCode=KEEPLEARNING",
+    tags: ["node", "nodejs", "backend", "express", "mongodb", "sql", "nosql", "orm", "api", "rest", "server"],
+    blurb: "Full Node.js backend — Express, SQL/NoSQL, aggregation, testing, deployment.",
   },
   {
     id: "piyush-dsa-java",
     persona: "piyush",
     title: "Data Structures & Algorithms with Java",
     provider: "Udemy",
-    url: "https://www.udemy.com/course/java-dsa/?referralCode=8EFAC2A8E1EC6230C8FD",
+    url: "https://www.udemy.com/course/java-dsa/?couponCode=KEEPLEARNING",
     tags: ["dsa", "data structures", "algorithms", "java", "leetcode", "interview"],
     blurb: "DSA fundamentals through advanced, in Java.",
+  },
+  {
+    id: "piyush-twitter",
+    persona: "piyush",
+    title: "Full Stack Twitter Clone",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/full-stack-twitter-clone/?couponCode=KEEPLEARNING",
+    tags: ["fullstack", "full stack", "project", "twitter", "clone", "react", "node", "graphql", "real world", "mern"],
+    blurb: "Build a full-stack Twitter clone — real-world end-to-end project.",
+  },
+  {
+    id: "piyush-docker-udemy",
+    persona: "piyush",
+    title: "Docker Mastery Course",
+    provider: "Udemy",
+    url: "https://www.udemy.com/course/docker-mastery-course/?couponCode=KEEPLEARNING",
+    tags: ["docker", "containers", "container", "devops", "kubernetes", "compose"],
+    blurb: "Master Docker — images, containers, Compose and more.",
   },
   {
     id: "piyush-courses-hub",
@@ -185,7 +249,7 @@ export function findCourses(persona: PersonaId, topic: string, limit = 3): Cours
 // and non-pushy — the user asked: give buy links, but never forcefully.
 export const COURSE_GUIDANCE = `
 
-Courses: When the user genuinely wants to learn a topic YOU teach, you may call the recommendCourses tool to fetch your real, current courses and share the enroll link as a FRIENDLY, OPTIONAL suggestion — one short line like "agar structured way me seekhna ho toh mera course bhi hai". Never pressure, never repeat it every message, and if the tool returns nothing relevant, just teach and don't mention any course. Free learning always comes first; the course is a bonus, not a paywall.`;
+Courses: When the user genuinely wants to learn a topic YOU teach, you may call the recommendCourses tool to fetch your real, current courses and share the enroll link as a FRIENDLY, OPTIONAL suggestion — one short line like "agar structured way me seekhna ho toh mera course bhi hai". Never pressure, never repeat it every message, and if the tool returns nothing relevant, just teach and don't mention any course. Free learning always comes first; the course is a bonus, not a paywall. IMPORTANT: whenever you recommend a ChaiCode course, always tell them to use coupon code ${CHAICODE_COUPON} for 10% off.`;
 
 function normUrl(u: string): string {
   try {

@@ -99,6 +99,10 @@ app.post("/api/chat", async (c) => {
   if (!chatId) return c.text("Missing chatId", 400);
 
   const userId = session.user.id;
+  const userName = session.user.name?.split(" ")[0]?.trim();
+  const userNote = userName
+    ? `\n\nThe person you are chatting with is named ${userName}. Address them by their first name naturally and warmly when it fits (e.g. in a greeting), but don't overuse it in every message.`
+    : "";
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
 
   // History may contain tool parts (incl. provider-executed web_search) that don't
@@ -111,7 +115,7 @@ app.post("/api/chat", async (c) => {
   const result = streamText({
     // Responses API so we can use OpenAI's built-in web search tool.
     model: openai.responses(model),
-    system: persona.systemPrompt + COURSE_GUIDANCE + SEARCH_GUIDANCE + guardrails(persona.name),
+    system: persona.systemPrompt + COURSE_GUIDANCE + SEARCH_GUIDANCE + guardrails(persona.name) + userNote,
     messages: await convertToModelMessages(historyForModel),
     stopWhen: stepCountIs(5),
     tools: {
