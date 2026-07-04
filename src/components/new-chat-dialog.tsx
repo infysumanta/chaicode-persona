@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { PERSONA_LIST, type PersonaId } from "@/lib/personas";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -27,10 +26,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-const schema = z.object({
-  persona: z.enum(["hitesh", "piyush"]),
-  message: z.string().trim().min(1, "Type your first message").max(2000),
-});
+const schema = z.object({ persona: z.enum(["hitesh", "piyush"]) });
 type FormValues = z.infer<typeof schema>;
 
 export function NewChatDialog({
@@ -47,21 +43,18 @@ export function NewChatDialog({
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { persona: defaultPersona, message: "" },
+    defaultValues: { persona: defaultPersona },
   });
 
   const selected = form.watch("persona");
 
   const onSubmit = async (values: FormValues) => {
     try {
-      const chat = await create.mutateAsync({
-        persona: values.persona,
-        title: values.message.slice(0, 60),
-      });
+      // Title is a placeholder; it's generated dynamically from the first message.
+      const chat = await create.mutateAsync({ persona: values.persona, title: "New chat" });
       await utils.chat.list.invalidate();
       setOpen(false);
-      form.reset({ persona: values.persona, message: "" });
-      router.push(`/chat/${chat.id}?first=${encodeURIComponent(values.message)}`);
+      router.push(`/chat/${chat.id}`);
     } catch {
       toast.error("Could not start chat. Please try again.");
     }
@@ -72,14 +65,14 @@ export function NewChatDialog({
       open={open}
       onOpenChange={(o) => {
         setOpen(o);
-        if (o) form.reset({ persona: defaultPersona, message: "" });
+        if (o) form.reset({ persona: defaultPersona });
       }}
     >
       <DialogTrigger render={children as React.ReactElement} />
       <DialogContent className={`persona-${selected}`}>
         <DialogHeader>
           <DialogTitle>Start a new chat</DialogTitle>
-          <DialogDescription>Pick a mentor and ask your first question.</DialogDescription>
+          <DialogDescription>Pick a mentor and start chatting.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
@@ -119,23 +112,6 @@ export function NewChatDialog({
                         );
                       })}
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Your message</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="e.g. React seekhna hai, kahan se shuru karun?"
-                      className="min-h-24 resize-none"
-                      {...field}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

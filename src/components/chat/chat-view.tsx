@@ -1,11 +1,12 @@
 "use client";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
-import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { MoreVertical, Pencil, ArrowUp, Square } from "lucide-react";
 import { type Persona } from "@/lib/personas";
+import { trpc } from "@/lib/trpc";
 import { RenameDialog } from "@/components/rename-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,8 +36,8 @@ export function ChatView({
   initialMessages: UIMessage[];
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const sentRef = useRef(false);
+  const utils = trpc.useUtils();
+  const titledRef = useRef(initialMessages.length > 0);
   const [renameOpen, setRenameOpen] = useState(false);
   const [input, setInput] = useState("");
 
@@ -47,19 +48,17 @@ export function ChatView({
       api: "/api/chat",
       body: { chatId, persona: persona.id },
     }),
+    onFinish: () => {
+      utils.chat.list.invalidate();
+      // Title is generated on the first exchange — pull the fresh one into the header.
+      if (!titledRef.current) {
+        titledRef.current = true;
+        router.refresh();
+      }
+    },
   });
 
   const busy = status === "submitted" || status === "streaming";
-
-  // Auto-send the opening message passed from the New Chat dialog.
-  useEffect(() => {
-    const first = searchParams.get("first");
-    if (first && !sentRef.current && messages.length === 0) {
-      sentRef.current = true;
-      sendMessage({ text: first });
-      router.replace(`/chat/${chatId}`);
-    }
-  }, [searchParams, messages.length, sendMessage, chatId, router]);
 
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -82,8 +81,8 @@ export function ChatView({
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Chat options" />}>
-              <MoreVertical className="size-4" />
-            </DropdownMenuTrigger>
+            <MoreVertical className="size-4" />
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setRenameOpen(true)}>
               <Pencil className="mr-2 size-4" /> Rename
