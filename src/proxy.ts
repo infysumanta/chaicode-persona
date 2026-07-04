@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
-import { COOKIE_PREFIX, SESSION_COOKIE_NAME } from "@/lib/auth-constants";
+import { COOKIE_PREFIX } from "@/lib/auth-constants";
 
 // Public routes reachable without a session. /login doubles as registration
 // (OAuth-only: GitHub/Google).
@@ -10,10 +10,7 @@ const PUBLIC_PATHS = ["/login"];
 // re-validate the real session; this just handles redirect UX.
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasSession = !!getSessionCookie(request, {
-    cookiePrefix: COOKIE_PREFIX,
-    cookieName: SESSION_COOKIE_NAME,
-  });
+  const hasSession = !!getSessionCookie(request, { cookiePrefix: COOKIE_PREFIX });
   const isPublic = PUBLIC_PATHS.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
