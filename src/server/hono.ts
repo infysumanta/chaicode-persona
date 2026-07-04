@@ -120,7 +120,7 @@ app.post("/api/chat", async (c) => {
       web_search: openai.tools.webSearch(),
       recommendCourses: tool({
         description:
-          "Look up THIS mentor's own real, current courses relevant to a topic the user wants to learn. Call it only when the user is trying to learn a topic the mentor teaches, so you can share a genuine enroll link as a friendly optional suggestion. Returns [] when nothing fits -- then do not mention any course.",
+          "Look up THIS mentor's own real, current courses relevant to a topic the user wants to learn. Call it only when the user is trying to learn a topic the mentor teaches, so you can share a genuine enroll link as a friendly optional suggestion. Returns [] when nothing fits -- then do not mention any course, and do not recommend anyone else's course.",
         inputSchema: z.object({
           topic: z
             .string()

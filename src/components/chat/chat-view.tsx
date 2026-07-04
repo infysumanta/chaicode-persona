@@ -7,6 +7,8 @@ import Image from "next/image";
 import { MoreVertical, Pencil } from "lucide-react";
 import { type Persona, type PersonaId } from "@/lib/personas";
 import { trpc } from "@/lib/trpc";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RenameDialog } from "@/components/rename-dialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,6 +83,9 @@ export function ChatView({
 }) {
   const router = useRouter();
   const utils = trpc.useUtils();
+  const { data: session } = authClient.useSession();
+  const user = session?.user;
+  const userInitials = (user?.name || user?.email || "You").slice(0, 2).toUpperCase();
   const titledRef = useRef(initialMessages.length > 0);
   const [renameOpen, setRenameOpen] = useState(false);
 
@@ -155,8 +160,39 @@ export function ChatView({
               }
             />
           ) : (
-            messages.map((m) => (
+            messages.map((m) => {
+              const toolCourseUrls = new Set<string>();
+              const toolSearchUrls = new Set<string>();
+              for (const part of m.parts) {
+                if (part.type === "tool-recommendCourses") {
+                  const out = (part as { output?: CourseCard[] }).output;
+                  if (Array.isArray(out)) out.forEach((c) => c?.url && toolCourseUrls.add(c.url));
+                }
+                if (part.type === "tool-searchYouTubeChannel") {
+                  const out = (part as { output?: { searchUrl?: string } }).output;
+                  if (out?.searchUrl) toolSearchUrls.add(out.searchUrl);
+                }
+              }
+              const assistantText =
+                m.role === "assistant"
+                  ? m.parts
+                      .filter((p) => p.type === "text")
+                      .map((p) => (p as { text: string }).text)
+                      .join("\n")
+                  : "";
+              return (
               <Message key={m.id} from={m.role} className="animate-message-in">
+                {m.role === "user" && (
+                  <div className="flex items-center gap-2 self-end">
+                    <span className="text-sm font-semibold">
+                      {user?.name?.split(" ")[0] ?? "You"}
+                    </span>
+                    <Avatar className="size-7">
+                      {user?.image && <AvatarImage src={user.image} alt="" />}
+                      <AvatarFallback className="text-xs">{userInitials}</AvatarFallback>
+                    </Avatar>
+                  </div>
+                )}
                 {m.role === "assistant" && (
                   <div className="flex items-center gap-2">
                     <Image
@@ -189,16 +225,16 @@ export function ChatView({
                         errorText?: string;
                       };
                       return (
-                        <Tool key={i} defaultOpen>
-                          <ToolHeader type={p.type} state={p.state} title="Course suggestions" />
-                          <ToolContent>
-                            {p.input != null && <ToolInput input={p.input} />}
-                            <ToolOutput
-                              output={p.output ? <CourseCards courses={p.output} /> : null}
-                              errorText={p.errorText}
-                            />
-                          </ToolContent>
-                        </Tool>
+                        <div key={i} className="flex flex-col gap-2">
+                          <Tool>
+                            <ToolHeader type={p.type} state={p.state} title="Course suggestions" />
+                            <ToolContent>
+                              {p.input != null && <ToolInput input={p.input} />}
+                              <ToolOutput output={p.output} errorText={p.errorText} />
+                            </ToolContent>
+                          </Tool>
+                          {p.output?.length ? <CourseCards courses={p.output} /> : null}
+                        </div>
                       );
                     }
                     // Mentor's YouTube channel search -> channel card.
@@ -211,16 +247,16 @@ export function ChatView({
                         errorText?: string;
                       };
                       return (
-                        <Tool key={i} defaultOpen>
-                          <ToolHeader type={p.type} state={p.state} title="YouTube channel search" />
-                          <ToolContent>
-                            {p.input != null && <ToolInput input={p.input} />}
-                            <ToolOutput
-                              output={p.output ? <ChannelSearchCard {...p.output} /> : null}
-                              errorText={p.errorText}
-                            />
-                          </ToolContent>
-                        </Tool>
+                        <div key={i} className="flex flex-col gap-2">
+                          <Tool>
+                            <ToolHeader type={p.type} state={p.state} title="YouTube channel search" />
+                            <ToolContent>
+                              {p.input != null && <ToolInput input={p.input} />}
+                              <ToolOutput output={p.output} errorText={p.errorText} />
+                            </ToolContent>
+                          </Tool>
+                          {p.output ? <ChannelSearchCard {...p.output} /> : null}
+                        </div>
                       );
                     }
                     // Any other tool call (e.g. web_search) — generic display.
@@ -246,12 +282,7 @@ export function ChatView({
                   })}
                   {m.role === "assistant" &&
                     (() => {
-                      const links = extractYouTubeLinks(
-                        m.parts
-                          .filter((p) => p.type === "text")
-                          .map((p) => (p as { text: string }).text)
-                          .join("\n")
-                      );
+                      const links = extractYouTubeLinks(assistantText);
                       return links.length ? (
                         <div className="mt-2 flex flex-col gap-2">
                           {links.map((l) => (
@@ -262,21 +293,15 @@ export function ChatView({
                     })()}
                   {m.role === "assistant" &&
                     (() => {
-                      const courses = extractCourseLinks(
-                        m.parts
-                          .filter((p) => p.type === "text")
-                          .map((p) => (p as { text: string }).text)
-                          .join("\n")
+                      const courses = extractCourseLinks(assistantText).filter(
+                        (c) => !toolCourseUrls.has(c.url)
                       );
                       return courses.length ? <CourseCards courses={courses} /> : null;
                     })()}
                   {m.role === "assistant" &&
                     (() => {
-                      const searches = extractYouTubeSearchLinks(
-                        m.parts
-                          .filter((p) => p.type === "text")
-                          .map((p) => (p as { text: string }).text)
-                          .join("\n")
+                      const searches = extractYouTubeSearchLinks(assistantText).filter(
+                        (sr) => !toolSearchUrls.has(sr.url)
                       );
                       return searches.length ? (
                         <div className="mt-2 flex flex-col gap-2">
@@ -293,18 +318,15 @@ export function ChatView({
                     })()}
                   {m.role === "assistant" &&
                     (() => {
-                      const text = m.parts
-                        .filter((p) => p.type === "text")
-                        .map((p) => (p as { text: string }).text)
-                        .join("\n");
-                      const refs = extractLinks(text).filter(
+                      const refs = extractLinks(assistantText).filter(
                         (l) => !youtubeId(l.url) && !parseYtSearch(l.url) && !courseForUrl(l.url)
                       );
                       return <MessageSources links={refs} />;
                     })()}
                 </MessageContent>
               </Message>
-            ))
+              );
+            })
           )}
           {status === "submitted" && (
             <Message from="assistant">
