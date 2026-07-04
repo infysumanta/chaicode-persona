@@ -4,12 +4,11 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { MoreVertical, Pencil, ArrowUp, Square } from "lucide-react";
-import { type Persona } from "@/lib/personas";
+import { MoreVertical, Pencil } from "lucide-react";
+import { type Persona, type PersonaId } from "@/lib/personas";
 import { trpc } from "@/lib/trpc";
 import { RenameDialog } from "@/components/rename-dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +22,42 @@ import {
   ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
+import {
+  PromptInput,
+  PromptInputBody,
+  PromptInputTextarea,
+  PromptInputFooter,
+  PromptInputTools,
+  PromptInputSubmit,
+  type PromptInputMessage,
+} from "@/components/ai-elements/prompt-input";
+import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
+import { CourseCards, type CourseCard } from "@/components/chat/course-cards";
+import { extractCourseLinks, stripCourseLinks } from "@/lib/courses";
+import { YouTubePreview } from "@/components/chat/youtube-preview";
+import { extractYouTubeLinks, stripYouTubeLinks } from "@/lib/youtube";
+import {
+  Tool,
+  ToolHeader,
+  ToolContent,
+  ToolInput,
+  ToolOutput,
+} from "@/components/ai-elements/tool";
+
+const STARTERS: Record<PersonaId, string[]> = {
+  hitesh: [
+    "React kaise seekhun?",
+    "Backend with Node.js",
+    "JavaScript project ideas",
+    "DevOps ka roadmap batao",
+  ],
+  piyush: [
+    "How to learn Docker?",
+    "System design basics",
+    "Node.js backend project idea",
+    "GenAI agents kaise banaye?",
+  ],
+};
 
 export function ChatView({
   chatId,
@@ -39,7 +74,6 @@ export function ChatView({
   const utils = trpc.useUtils();
   const titledRef = useRef(initialMessages.length > 0);
   const [renameOpen, setRenameOpen] = useState(false);
-  const [input, setInput] = useState("");
 
   const { messages, sendMessage, status, stop } = useChat({
     id: chatId,
@@ -50,7 +84,6 @@ export function ChatView({
     }),
     onFinish: () => {
       utils.chat.list.invalidate();
-      // Title is generated on the first exchange — pull the fresh one into the header.
       if (!titledRef.current) {
         titledRef.current = true;
         router.refresh();
@@ -58,21 +91,25 @@ export function ChatView({
     },
   });
 
-  const busy = status === "submitted" || status === "streaming";
-
-  const submit = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    const text = input.trim();
-    if (!text || busy) return;
-    sendMessage({ text });
-    setInput("");
+  const send = (text: string) => {
+    const t = text.trim();
+    if (!t) return;
+    sendMessage({ text: t });
   };
 
+  const handleSubmit = (message: PromptInputMessage) => send(message.text);
+
   return (
-    <div className={`persona-${persona.id} flex flex-1 flex-col`}>
+    <div className={`persona-${persona.id} flex min-h-0 flex-1 flex-col`}>
       {/* Persona sub-header */}
-      <div className="flex items-center gap-3 border-b bg-background/50 px-4 py-2.5 backdrop-blur">
-        <Image src={persona.avatar} alt={persona.name} width={36} height={36} className="rounded-full accent-ring" />
+      <div className="flex shrink-0 items-center gap-3 border-b bg-background/60 px-4 py-2.5 backdrop-blur">
+        <Image
+          src={persona.avatar}
+          alt={persona.name}
+          width={36}
+          height={36}
+          className="size-9 rounded-full object-cover accent-ring"
+        />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold">{title}</div>
           <div className="truncate text-xs text-muted-foreground">
@@ -91,35 +128,117 @@ export function ChatView({
         </DropdownMenu>
       </div>
 
-      {/* Messages */}
-      <Conversation className="flex-1">
-        <ConversationContent className="mx-auto w-full max-w-3xl">
+      {/* Messages (scroll region) */}
+      <Conversation className="min-h-0 flex-1">
+        <ConversationContent className="mx-auto w-full max-w-3xl gap-6 py-6">
           {messages.length === 0 ? (
             <ConversationEmptyState
               title={`Chat with ${persona.name}`}
               description={persona.greeting}
               icon={
-                <Image src={persona.avatar} alt={persona.name} width={56} height={56} className="rounded-full" />
+                <Image
+                  src={persona.avatar}
+                  alt={persona.name}
+                  width={64}
+                  height={64}
+                  className="size-16 rounded-full object-cover accent-ring"
+                />
               }
             />
           ) : (
             messages.map((m) => (
               <Message key={m.id} from={m.role}>
                 {m.role === "assistant" && (
-                  <Image
-                    src={persona.avatar}
-                    alt={persona.name}
-                    width={28}
-                    height={28}
-                    className="mt-1 size-7 rounded-full accent-ring"
-                  />
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src={persona.avatar}
+                      alt={persona.name}
+                      width={28}
+                      height={28}
+                      className="size-7 shrink-0 rounded-full object-cover accent-ring"
+                    />
+                    <span className="text-sm font-semibold">{persona.name}</span>
+                  </div>
                 )}
                 <MessageContent>
-                  {m.parts.map((part, i) =>
-                    part.type === "text" ? (
-                      <MessageResponse key={i}>{part.text}</MessageResponse>
-                    ) : null
-                  )}
+                  {m.parts.map((part, i) => {
+                    if (part.type === "text") {
+                      return (
+                        <MessageResponse key={i} className="chat-prose">
+                          {stripCourseLinks(stripYouTubeLinks(part.text))}
+                        </MessageResponse>
+                      );
+                    }
+                    // Course recommendations: render the tool call, with the
+                    // clickable course cards nested inside the tool output.
+                    if (part.type === "tool-recommendCourses") {
+                      const p = part as {
+                        type: `tool-${string}`;
+                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
+                        input?: unknown;
+                        output?: CourseCard[];
+                        errorText?: string;
+                      };
+                      return (
+                        <Tool key={i} defaultOpen={p.state === "output-available"}>
+                          <ToolHeader type={p.type} state={p.state} title="Course suggestions" />
+                          <ToolContent>
+                            <ToolInput input={p.input} />
+                            <ToolOutput
+                              output={p.output ? <CourseCards courses={p.output} /> : null}
+                              errorText={p.errorText}
+                            />
+                          </ToolContent>
+                        </Tool>
+                      );
+                    }
+                    // Any other tool call (e.g. web_search) — generic display.
+                    if (typeof part.type === "string" && part.type.startsWith("tool-")) {
+                      const p = part as {
+                        type: `tool-${string}`;
+                        state: "input-streaming" | "input-available" | "output-available" | "output-error";
+                        input?: unknown;
+                        output?: unknown;
+                        errorText?: string;
+                      };
+                      return (
+                        <Tool key={i}>
+                          <ToolHeader type={p.type} state={p.state} />
+                          <ToolContent>
+                            {p.input != null && <ToolInput input={p.input} />}
+                            <ToolOutput output={p.output} errorText={p.errorText} />
+                          </ToolContent>
+                        </Tool>
+                      );
+                    }
+                    return null;
+                  })}
+                  {m.role === "assistant" &&
+                    (() => {
+                      const links = extractYouTubeLinks(
+                        m.parts
+                          .filter((p) => p.type === "text")
+                          .map((p) => (p as { text: string }).text)
+                          .join("\n")
+                      );
+                      return links.length ? (
+                        <div className="mt-2 flex flex-col gap-2">
+                          {links.map((l) => (
+                            <YouTubePreview key={l.id} url={l.url} id={l.id} label={l.label} />
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
+                  {m.role === "assistant" &&
+                    (() => {
+                      const courses = extractCourseLinks(
+                        m.parts
+                          .filter((p) => p.type === "text")
+                          .map((p) => (p as { text: string }).text)
+                          .join("\n")
+                      );
+                      return courses.length ? <CourseCards courses={courses} /> : null;
+                    })()}
                 </MessageContent>
               </Message>
             ))
@@ -129,40 +248,23 @@ export function ChatView({
       </Conversation>
 
       {/* Composer */}
-      <div className="mx-auto w-full max-w-3xl px-3 pb-4 sm:px-4">
-        <form
-          onSubmit={submit}
-          className="accent-ring flex items-end gap-2 rounded-2xl border bg-card/70 p-2 backdrop-blur"
-        >
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            placeholder={`Message ${persona.name}…`}
-            className="max-h-40 min-h-11 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0"
-            rows={1}
-          />
-          {busy ? (
-            <Button type="button" size="icon" variant="secondary" onClick={() => stop()} aria-label="Stop">
-              <Square className="size-4" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              size="icon"
-              className="accent-grad text-white"
-              disabled={!input.trim()}
-              aria-label="Send"
-            >
-              <ArrowUp className="size-4" />
-            </Button>
-          )}
-        </form>
+      <div className="mx-auto w-full max-w-3xl shrink-0 px-3 pb-4 sm:px-4">
+        {messages.length === 0 && (
+          <Suggestions className="mb-2">
+            {STARTERS[persona.id].map((s) => (
+              <Suggestion key={s} suggestion={s} onClick={send} />
+            ))}
+          </Suggestions>
+        )}
+        <PromptInput onSubmit={handleSubmit}>
+          <PromptInputBody>
+            <PromptInputTextarea placeholder={`Message ${persona.name}…`} />
+          </PromptInputBody>
+          <PromptInputFooter>
+            <PromptInputTools />
+            <PromptInputSubmit status={status} onStop={() => stop()} />
+          </PromptInputFooter>
+        </PromptInput>
       </div>
 
       <RenameDialog chatId={chatId} currentTitle={title} open={renameOpen} onOpenChange={setRenameOpen} />
