@@ -4,6 +4,7 @@ frontend:
     preBuild:
       commands:
         - corepack enable
+        - pnpm config set store-dir .pnpm-store
         - pnpm install --frozen-lockfile
     build:
       commands:
@@ -15,5 +16,4 @@ frontend:
   cache:
     paths:
       - .next/cache/**/*
-      - node_modules/**/*
-      - .local/share/pnpm/store/**/*
+      - .pnpm-store/**/*

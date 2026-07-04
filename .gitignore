@@ -45,3 +45,6 @@ next-env.d.ts
 
 # local agent/harness settings
 .claude/
+
+# pnpm store (Amplify cache)
+.pnpm-store/
