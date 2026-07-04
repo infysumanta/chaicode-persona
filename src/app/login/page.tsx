@@ -28,7 +28,8 @@ export default function LoginPage() {
 
   const signIn = (provider: "github" | "google") => {
     setLoading(provider);
-    authClient.signIn.social({ provider, callbackURL: "/" });
+    const next = new URLSearchParams(window.location.search).get("next") || "/";
+    authClient.signIn.social({ provider, callbackURL: next });
   };
 
   return (
