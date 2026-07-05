@@ -7,6 +7,10 @@ auto-generated titles.
 
 > Educational fan project. Personas are AI imitations, not the real people.
 
+**Live demo:** https://chaicode-persona.sumantakabiraj.com
+
+**Documentation** ([`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)) — persona data collection & prep, prompt-engineering strategy, context management, and sample conversations for both personas.
+
 ## Stack
 
 - **Next.js 16** (App Router, TypeScript)
@@ -28,9 +32,9 @@ auto-generated titles.
 ## Local setup
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env.local   # then fill in real values
-npm run dev
+pnpm dev
 ```
 
 ### Environment variables
