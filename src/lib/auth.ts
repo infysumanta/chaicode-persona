@@ -16,6 +16,13 @@ export const auth = betterAuth({
   advanced: {
     cookiePrefix: COOKIE_PREFIX,
   },
+  // Same verified email across GitHub/Google = one account, not two.
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["github", "google"],
+    },
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
