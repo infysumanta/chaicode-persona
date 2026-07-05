@@ -7,7 +7,7 @@ auto-generated titles.
 
 > Educational fan project. Personas are AI imitations, not the real people.
 
-**Live demo:** https://chaicode-persona.sumantakabiraj.com
+**Live demo:** https://chaicode-persona.vercel.app
 
 **Documentation** ([`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)) — persona data collection & prep, prompt-engineering strategy, context management, and sample conversations for both personas.
 
