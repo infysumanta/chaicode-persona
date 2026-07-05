@@ -48,3 +48,6 @@ next-env.d.ts
 
 # pnpm store (Amplify cache)
 .pnpm-store/
+
+# internal design specs / skill artifacts
+docs/superpowers/
